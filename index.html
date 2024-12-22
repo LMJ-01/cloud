@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>실시간 경기 결과</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f7f6;
+            color: #333;
+            margin: 0;
+            padding: 0;
+        }
+
+        header {
+            background-color: #4CAF50;
+            color: white;
+            padding: 15px;
+            text-align: center;
+            font-size: 24px;
+        }
+
+        #search-box {
+            margin: 20px auto;
+            padding: 12px;
+            width: 80%;
+            max-width: 400px;
+            font-size: 18px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            display: block;
+            background-color: #fff;
+        }
+
+        table {
+            width: 90%;
+            margin: 20px auto;
+            border-collapse: collapse;
+            background-color: #fff;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: center;
+            border-bottom: 1px solid #ddd;
+        }
+
+        th {
+            background-color: #4CAF50;
+            color: white;
+        }
+
+        td {
+            font-size: 16px;
+            color: #555;
+        }
+
+        td.score {
+            font-weight: bold;
+            color: #333;
+        }
+
+        td img {
+            width: 30px;
+            height: 30px;
+            margin-right: 10px;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+
+        tr:hover {
+            background-color: #f1f1f1;
+        }
+
+        .event {
+            text-align: left;
+            line-height: 1.6;
+            font-size: 14px;
+        }
+
+        footer {
+            background-color: #333;
+            color: white;
+            text-align: center;
+            padding: 10px;
+            font-size: 14px;
+        }
+
+    </style>
+</head>
+<body>
+
+<header>
+    실시간 경기 결과
+</header>
+
+<!-- 팀 검색 창 추가 -->
+<input type="text" id="search-box" placeholder="팀 이름 검색" onkeyup="filterMatches()" />
+
+<table>
+    <thead>
+        <tr>
+            <th>경기 ID</th>
+            <th>홈 팀</th>
+            <th>원정 팀</th>
+            <th>현재 스코어</th>
+            <th>상태</th>
+            <th>이벤트</th>
+        </tr>
+    </thead>
+    <tbody id="match-data">
+        <!-- JavaScript로 실시간 경기 결과를 동적으로 여기에 추가 -->
+    </tbody>
+</table>
+
+<footer>
+    <p>© 2024 실시간 경기 결과 서비스</p>
+</footer>
+
+<script>
+    // 상태를 한글로 변환하는 함수
+    function translateStatus(status) {
+        const statusMap = {
+            "First Half": "전반전",
+            "Second Half": "후반전",
+            "Extra Time": "연장전",
+            "Penalty": "승부차기",
+            "Match Finished": "경기 종료",
+            "Not Started": "경기 시작 전"
+        };
+        return statusMap[status] || status;
+    }
+
+    // 이벤트를 한글로 변환하는 함수
+    function translateEvents(events) {
+        return events
+            .map(event => {
+                const time = `${event.time.elapsed}분`;
+                const player = event.player ? event.player.name : "선수 없음";
+                const team = event.team ? event.team.name : "팀 없음";
+
+                if (event.type === 'Card') {
+                    return `${time} - ${team}의 ${player}: ${
+                        event.detail === 'Yellow Card' ? '경고 카드' : '퇴장 카드'
+                    }`;
+                } else if (event.type === 'Goal') {
+                    return `${time} - ${team}의 ${player}: 골`;
+                } else if (event.type === 'subst') {
+                    return `${time} - ${team}의 ${player}: 교체`;
+                }
+                return `${time} - ${team}의 ${player}: ${event.detail}`;
+            })
+            .join('<br>');
+    }
+
+    // 경기 데이터를 필터링하는 함수
+    function filterMatches() {
+        const searchValue = document.getElementById('search-box').value.toLowerCase();
+        const rows = document.querySelectorAll('#match-data tr');
+
+        rows.forEach(row => {
+            const homeTeam = row.cells[1].textContent.toLowerCase();
+            const awayTeam = row.cells[2].textContent.toLowerCase();
+            if (homeTeam.includes(searchValue) || awayTeam.includes(searchValue)) {
+                row.style.display = '';
+            } else {
+                row.style.display = 'none';
+            }
+        });
+    }
+
+    // API를 호출하여 실시간 경기 결과를 받아오는 코드
+    fetch('https://v3.football.api-sports.io/fixtures?live=all', {
+        headers: {
+            "x-apisports-key": "24fcd56d1900ce220d7906f9f2a9ed87"  // 발급 받은 API 키
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        const matches = data.response;
+        const tableBody = document.getElementById('match-data');
+
+        // 각 경기 데이터를 반복하여 테이블에 추가
+        matches.forEach(match => {
+            const row = document.createElement('tr');
+
+            const fixture = match.fixture;
+            const teams = match.teams;
+            const goals = match.goals;
+            const status = translateStatus(fixture.status.long);
+            const events = match.events ? translateEvents(match.events) : "이벤트 없음";
+
+            row.innerHTML = `
+                <td>${fixture.id}</td>
+                <td><img src="${teams.home.logo}" alt="${teams.home.name}" /> ${teams.home.name}</td>
+                <td><img src="${teams.away.logo}" alt="${teams.away.name}" /> ${teams.away.name}</td>
+                <td class="score">${goals.home} - ${goals.away}</td>
+                <td>${status}</td>
+                <td class="event">${events}</td>
+            `;
+
+            tableBody.appendChild(row);
+        });
+    })
+    .catch(error => console.error('Error fetching data:', error));
+</script>
+
+</body>
+</html>

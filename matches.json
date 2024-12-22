@@ -1,0 +1,36 @@
+{
+  "response": [
+    {
+      "fixture": {
+        "id": 1159017,
+        "date": "2024-12-08T20:00:00+00:00",
+        "status": {"long": "First Half"},
+        "venue": {"name": "Estadio Malvinas Argentinas", "city": "Mendoza, Argentina"}
+      },
+      "teams": {
+        "home": {"name": "Atletico-MG", "logo": "https://media.api-sports.io/football/teams/1062.png"},
+        "away": {"name": "Atletico Paranaense", "logo": "https://media.api-sports.io/football/teams/134.png"}
+      },
+      "goals": {"home": 0, "away": 0},
+      "events": [
+        {"time": {"elapsed": 24}, "team": {"name": "Atletico Paranaense"}, "player": {"name": "A. Canobbio"}, "type": "Card", "detail": "Yellow Card"}
+      ]
+    },
+    {
+      "fixture": {
+        "id": 1159021,
+        "date": "2024-12-09T20:00:00+00:00",
+        "status": {"long": "Second Half"},
+        "venue": {"name": "Maracanã", "city": "Rio de Janeiro, Brazil"}
+      },
+      "teams": {
+        "home": {"name": "Flamengo", "logo": "https://media.api-sports.io/football/teams/1063.png"},
+        "away": {"name": "Vasco da Gama", "logo": "https://media.api-sports.io/football/teams/1064.png"}
+      },
+      "goals": {"home": 2, "away": 1},
+      "events": [
+        {"time": {"elapsed": 15}, "team": {"name": "Flamengo"}, "player": {"name": "Gabigol"}, "type": "Goal", "detail": "Normal Goal"}
+      ]
+    }
+  ]
+}
